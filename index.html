@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="icon-192.png" sizes="192x192" />
+<link rel="icon" href="icon-512.png" sizes="512x512" />
+    <link rel="manifest" href="manifest.json">
+    <title>M3E Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap" rel="stylesheet">
+    <script src="./jsmediatags.min.js"></script>
+
+    <style>
+        :root {
+            /* --- Material 3 Baseline Theme (Purple) --- */
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            
+            /* Tertiary (For Segment Buttons) */
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            
+            /* Surface & Background */
+            --md-sys-color-surface: #FEF7FF;
+            --md-sys-color-on-surface: #1D1B20;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-surface-container-high: #ECE6F0;
+            --md-sys-color-surface-container: #F3EDF7;
+            
+            --md-sys-color-outline: #79747E;
+
+            /* Motion */
+            --motion-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+            --motion-spring: cubic-bezier(0.25, 1.4, 0.4, 1.0);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --md-sys-color-primary: #D0BCFF;
+                --md-sys-color-on-primary: #381E72;
+                --md-sys-color-primary-container: #4F378B;
+                --md-sys-color-on-primary-container: #EADDFF;
+
+                --md-sys-color-tertiary: #EFB8C8;
+                --md-sys-color-on-tertiary: #492532;
+                --md-sys-color-tertiary-container: #633B48;
+                --md-sys-color-on-tertiary-container: #FFD8E4;
+
+                --md-sys-color-surface: #141218;
+                --md-sys-color-on-surface: #E6E1E5;
+                --md-sys-color-surface-container: #211F26;
+                --md-sys-color-surface-container-high: #2B2930;
+                --md-sys-color-surface-variant: #49454F;
+                --md-sys-color-on-surface-variant: #CAC4D0;
+                --md-sys-color-outline: #938F99;
+            }
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        /* fallback */
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 100 700;
+  src: url(./sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2) format('woff2');
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+
+}
+
+
+
+body {
+    margin: 0; 
+    padding: 0;
+    /* 3. Apply the font */
+    font-family: 'Google Sans Flex';
+    font-variation-settings: 'opsz' 20, 'wght' 1000; 
+            background-color: var(--md-sys-color-surface-container);
+            height: 100vh; height: 100dvh;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+            color: var(--md-sys-color-on-surface);
+            transition: background 0.3s;
+        }
+
+        .app-container {
+            width: 100%; height: 100%;
+            max-width: 412px;
+            background-color: var(--md-sys-color-surface-container);
+            display: flex; flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Icons Setup */
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            transition: font-variation-settings 0.2s ease;
+        }
+        .filled { font-variation-settings: 'FILL' 1; }
+
+        /* --- Layout --- */
+        .layout-column {
+            flex: 1; display: flex; flex-direction: column;
+            padding: 16px 24px; min-height: 0; overflow-y: auto;
+        }
+
+        /* --- Cover Art --- */
+        .art-wrapper {
+            flex: 1 1 auto;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 120px; max-height: 45vh;
+            margin: 24px 0; cursor: pointer;
+        }
+        .cover-art {
+            height: 100%; width: auto; max-width: 100%; aspect-ratio: 1/1;
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 28px;
+            position: relative; overflow: hidden;
+        }
+        #cover-img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s; }
+        #cover-img.loaded { opacity: 1; }
+        .placeholder-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 80px; color: var(--md-sys-color-on-surface-variant); opacity: 0.2;
+        }
+
+/* --- Cover Art Fix (Hide Placeholder when Art exists) --- */
+.cover-art.has-art .placeholder-icon {
+    display: none; /* Completely remove placeholder so it doesn't bleed through */
+}
+.cover-art.has-art {
+    background-color: transparent; /* Remove background if art is loaded */
+}
+
+        /* --- Meta Info --- */
+        .meta-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-shrink: 0; gap: 16px; }
+        .text-area { flex: 1; overflow: hidden; }
+        .song-title { font-size: 24px; font-weight: 800; line-height: 1.2; margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--md-sys-color-on-surface); }
+        .artist-name { font-size: 16px; font-weight: 500; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .action-area { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .star-pill {
+            height: 48px; padding: 0 20px;
+            background-color: var(--md-sys-color-surface-container-high);
+            color: var(--md-sys-color-on-surface-variant);
+            border: none; border-radius: 99px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .star-pill.active { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+        .star-pill.active span { font-variation-settings: 'FILL' 1; }
+        .time-txt { font-size: 14px; font-weight: 700; opacity: 0.7; margin-right: 12px; }
+
+        /* --- Progress --- */
+        .progress-container { position: relative; height: 44px; width: 100%; display: flex; align-items: center; margin-bottom: 24px; flex-shrink: 0; }
+        .wave-mask { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; overflow: hidden; z-index: 2; border-radius: 20px;}
+        .wave-svg {
+            position: absolute; left: 0; top: 50%; width: 800px; height: 24px; transform: translateY(-50%);
+            fill: none; stroke: var(--md-sys-color-primary); stroke-width: 8px; stroke-linecap: round; stroke-linejoin: round;
+            animation: waveFlow 2s linear infinite; animation-play-state: paused;
+        }
+        @keyframes waveFlow { from { transform: translateY(-50%) translateX(0); } to { transform: translateY(-50%) translateX(-80px); } }
+        .progress-container.playing .wave-svg { animation-play-state: running; }
+        .straight-line {
+            position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 8px;
+            background-color: var(--md-sys-color-surface-variant); border-radius: 99px; z-index: 1;
+            clip-path: polygon(var(--thumb-pos, 0%) 0, 100% 0, 100% 100%, var(--thumb-pos, 0%) 100%);
+        }
+        .thumb {
+            position: absolute; left: 0%; top: 50%; transform: translate(-50%, -50%); width: 8px; height: 24px;
+            background-color: var(--md-sys-color-primary); border-radius: 4px; z-index: 3; pointer-events: none;
+        }
+        .seek-input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; margin: 0; }
+
+        /* --- Main Controls (Outlined, Shrink Stress) --- */
+        .main-controls { display: flex; gap: 16px; height: 88px; margin-bottom: 24px; flex-shrink: 0; }
+        
+        .ctrl-btn {
+            position: relative; border: none; border-radius: 28px; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden; 
+            /* Smooth transition for flex grow/shrink */
+            transition: flex 0.3s var(--motion-spring), background-color 0.2s;
+        }
+        /* Ensure Play/Pause/Next/Prev are always Outlined */
+        .ctrl-btn span { font-size: 36px; font-variation-settings: 'FILL' 0; }
+
+        .btn-side { 
+            flex: 1; 
+            background-color: var(--md-sys-color-surface-container-high); 
+            color: var(--md-sys-color-on-surface-variant); 
+        }
+        .btn-play { 
+            flex: 1.6; 
+            background-color: var(--md-sys-color-primary-container); 
+            color: var(--md-sys-color-on-primary-container); 
+            border-radius: 32px; 
+        }
+        .btn-play span { font-size: 48px; }
+        
+        /* -- Stretch/Stress Animation Logic -- */
+        /* 1. Play Button Clicked: Play grows, sides shrink */
+        .btn-play:active { flex: 3.5; }
+        .main-controls:has(.btn-play:active) .btn-side { flex: 0.6; }
+        
+        /* 2. Side Button Clicked: Side grows, others shrink */
+        .btn-side:active { 
+            flex: 2.5; 
+            background-color: var(--md-sys-color-primary); 
+            color: var(--md-sys-color-on-primary); 
+        }
+        .main-controls:has(.btn-side:active) .btn-play { flex: 0.8; }
+        .main-controls:has(.btn-side:active) .btn-side:not(:active) { flex: 0.6; }
+
+
+        /* --- Segmented Buttons (Tertiary Colors, Filled Active) --- */
+        .seg-row { 
+            display: flex; height: 60px; gap: 8px; flex-shrink: 0; padding: 8px; margin-left: 28px; margin-right: 28px; border-radius: 28px;
+            background-color: var(--md-sys-color-tertiary-container); /* Tertiary Container Background */
+        }
+        .seg-btn {
+            flex: 1; border: none; 
+            background-color: rgba(255,255,255,0.1); 
+            color: var(--md-sys-color-on-tertiary-container);
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: background 0.2s, color 0.2s;
+        }
+        .seg-btn span { font-size: 26px; font-variation-settings: 'FILL' 0; }
+        
+        .seg-btn:first-child { border-radius: 24px 8px 8px 24px; }
+        .seg-btn:nth-child(2) { border-radius: 8px; }
+        .seg-btn:last-child { border-radius: 8px 24px 24px 8px; }
+        
+        /* Active Segment: Filled Icon + Strong Tertiary Color */
+        .seg-btn.active { 
+            background-color: var(--md-sys-color-on-tertiary-container); 
+            color: var(--md-sys-color-tertiary-container); 
+        }
+        .seg-btn.active span { font-variation-settings: 'FILL' 1; } /* Filled when active */
+
+        /* --- Bottom Sheet --- */
+        .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 50; }
+        .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+        
+        .bottom-sheet {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background-color: var(--md-sys-color-surface); 
+            border-radius: 32px 32px 0 0;
+            padding: 20px 24px 0 24px; z-index: 100; 
+            transform: translateY(100%); 
+            transition: transform 0.35s var(--motion-standard);
+            display: flex; flex-direction: column; 
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            touch-action: none; 
+        }
+        .bottom-sheet.show { transform: translateY(0); }
+        .sheet-handle-area { width: 100%; padding: 10px 0 20px; display: flex; justify-content: center; cursor: grab; flex-shrink: 0; }
+        .sheet-handle { width: 32px; height: 4px; background: var(--md-sys-color-outline); opacity: 0.4; border-radius: 2px; }
+
+        #playlist-sheet { height: 75%; }
+        #lyrics-sheet { height: 85%; }
+
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+        
+        .profile-btn {
+            height: 44px; padding: 0 24px;
+            background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+            border: none; border-radius: 28px;
+            display: flex; gap: 8px; align-items: center; justify-content: center;
+            cursor: pointer; font-weight: 700;
+        }
+        .profile-btn span { font-size: 24px; font-variation-settings: 'FILL' 1; }
+
+        .fav-filter {
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 100px;
+            border: 1px solid var(--md-sys-color-outline); background: transparent; color: var(--md-sys-color-on-surface);
+            font-weight: 700; cursor: pointer;
+        }
+        .fav-filter.active { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-color: transparent; }
+        .fav-filter.active span { font-variation-settings: 'FILL' 1; }
+        
+        .playlist-list { flex: 1; overflow-y: auto; padding-bottom: 32px; }
+        .list-item { 
+            display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 2px; 
+            background-color: var(--md-sys-color-surface-container); cursor: pointer;
+                transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s;
+    /* Fix: Ensure z-index is handled during drag */
+    z-index: 1;
+        }
+        /* ADDED: Style for the item currently being dragged */
+.list-item.dragging {
+    opacity: 0.5; /* Fade out the original element slightly */
+    z-index: 100;
+}
+        .list-item:first-child { border-radius: 28px 28px 4px 4px; }
+        .list-item:last-child { border-radius: 4px 4px 28px 28px; }
+        .list-item.playing { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        
+        .list-drag-handle { color: var(--md-sys-color-outline); padding: 4px; cursor: move; }
+        /* --- CSS Update for List Thumbnails --- */
+.list-thumb { 
+    width: 52px; height: 52px; 
+    border-radius: 12px; 
+    background-color: var(--md-sys-color-surface-variant); 
+    flex-shrink: 0; 
+    overflow: hidden; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    position: relative;
+}
+
+/* The Album Placeholder Icon */
+.list-thumb .material-symbols-rounded {
+    font-size: 24px;
+    opacity: 0.4;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The actual image (hidden by default until loaded) */
+.list-thumb img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%; 
+    object-fit: cover; 
+    display: none; /* Hidden until JS says it's ready */
+    z-index: 2;
+}
+.list-thumb img.show { display: block; }
+
+
+        .list-info { flex: 1; overflow: hidden; }
+        .list-name { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-artist { font-weight: 500; font-size: 14px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+      
+.list-item { 
+    display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 2px; 
+    background-color: var(--md-sys-color-surface-container); 
+    cursor: pointer; position: relative;
+    transition: transform 0.2s ease, background-color 0.2s; /* Smooth movement */
+}
+/* Hide drag handle in Favorites view */
+/*.list-item.no-drag .list-drag-handle {
+    display: none;
+}*/
+.list-item.dragging {
+    opacity: 0.5;
+    background-color: var(--md-sys-color-surface-variant);
+    transform: scale(0.98);}
+        
+
+        /* Lyrics */
+        .lyrics-content {
+            flex: 1; overflow-y: auto; text-align: center; padding: 20px;
+            font-size: 20px; line-height: 1.6; color: var(--md-sys-color-on-surface-variant);
+            font-weight: 500; white-space: pre-wrap;
+        }
+        .lyrics-placeholder { opacity: 0.5; margin-top: 50px; }
+
+        /* Toast */
+        .toast {
+            position: absolute; top: 24px; left: 24px; right: 24px;
+            background: var(--md-sys-color-on-surface); color: var(--md-sys-color-surface);
+            padding: 16px; border-radius: 16px; z-index: 200;
+            display: flex; justify-content: space-between; align-items: center;
+            transform: translateY(-200%); transition: transform 0.4s var(--motion-standard);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .toast.show { transform: translateY(0); }
+        .toast-btn { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+        #legacy-input { display: none; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <input type="file" id="legacy-input" multiple accept="audio/*">
+
+        <div class="toast" id="toast">
+            <span>Library access needed</span>
+            <button class="toast-btn" onclick="restoreFolder()">Allow</button>
+        </div>
+
+        <div class="layout-column">
+            
+            <div class="art-wrapper" onclick="toggleLyrics(true)">
+                <div class="cover-art">
+                    <span class="material-symbols-rounded placeholder-icon">album</span>
+                    <img id="cover-img" src="" alt="">
+                </div>
+            </div>
+            
+            <div class="meta-row">
+                <div class="text-area">
+                    <h1 class="song-title" id="track-title">Select Folder</h1>
+                    <div class="artist-name" id="track-artist">To start playing</div>
+                </div>
+                <div class="action-area">
+                    <button class="star-pill" id="btn-fav" onclick="toggleFav()">
+                        <span class="material-symbols-rounded">star</span>
+                    </button>
+                    <span class="time-txt" id="time-txt">0:00</span>
+                </div>
+            </div>
+            
+            <div class="progress-container" id="p-container">
+                                <div class="wave-mask" id="wave-mask">
+                    <svg class="wave-svg" viewBox="0 0 800 24" preserveAspectRatio="none">
+    <path d="M0,12 C 20,0 20,0 40,12 S 60,24 80,12 T 160,12 T 240,12 T 320,12 T 400,12 T 480,12 T 560,12 T 640,12 T 720,12 T 800,12" />
+</svg>
+                </div>
+                <div class="straight-line" id="straight-line"></div>
+                <div class="thumb" id="thumb"></div>
+                <input type="range" class="seek-input" id="seeker" min="0" max="100" value="0">
+            </div>
+            
+            <div class="main-controls">
+                <button class="ctrl-btn btn-side" onclick="skip(-1)">
+                    <span class="material-symbols-rounded">skip_previous</span>
+                </button>
+                <button class="ctrl-btn btn-play" id="btn-play" onclick="togglePlay()">
+                    <span class="material-symbols-rounded" id="play-icon">play_arrow</span>
+                </button>
+                <button class="ctrl-btn btn-side" onclick="skip(1)">
+                    <span class="material-symbols-rounded">skip_next</span>
+                </button>
+            </div>
+            
+            <div class="seg-row">
+                <button class="seg-btn" id="btn-shuffle" onclick="toggleShuffle()">
+                    <span class="material-symbols-rounded">shuffle</span>
+                </button>
+                <button class="seg-btn" onclick="togglePlaylist(true)">
+                    <span class="material-symbols-rounded">queue_music</span>
+                </button>
+                <button class="seg-btn" id="btn-repeat" onclick="toggleRepeat()">
+                    <span class="material-symbols-rounded">repeat</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="sheet-backdrop" id="sheet-bg" onclick="closeAllSheets()"></div>
+
+        <div class="bottom-sheet" id="playlist-sheet">
+            <div class="sheet-handle-area" id="drag-playlist">
+                <div class="sheet-handle"></div>
+            </div>
+            <div class="sheet-header">
+                <button class="profile-btn" onclick="pickFolder()">
+                    <span class="material-symbols-rounded">folder_open</span> Select
+                </button>
+                <button class="fav-filter" id="btn-filter" onclick="toggleFilter()">
+                    <span class="material-symbols-rounded">star</span> Favorites
+                </button>
+            </div>
+            <div class="playlist-list" id="list-box"></div>
+        </div>
+
+        <div class="bottom-sheet" id="lyrics-sheet">
+            <div class="sheet-handle-area" id="drag-lyrics">
+                <div class="sheet-handle"></div>
+            </div>
+            <div class="sheet-header">
+                <span class="sheet-title">Lyrics</span>
+                <span class="material-symbols-rounded" style="opacity:0.5; cursor:pointer" onclick="toggleLyrics(false)">close</span>
+            </div>
+            <div class="lyrics-content" id="lyrics-box">
+                <div class="lyrics-placeholder">No lyrics available</div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    const audio = new Audio();
+    let state = {
+        list: [], favs: new Set(), idx: 0, playing: false, 
+        shuffle: false, repeat: false, filter: false,
+        dirHandle: null, dragSrc: null
+    };
+
+    const ui = {
+        title: document.getElementById('track-title'), artist: document.getElementById('track-artist'),
+        cover: document.getElementById('cover-img'), time: document.getElementById('time-txt'),
+        seeker: document.getElementById('seeker'), pCont: document.getElementById('p-container'),
+        mask: document.getElementById('wave-mask'), line: document.getElementById('straight-line'),
+        thumb: document.getElementById('thumb'), playIcon: document.getElementById('play-icon'),
+        favBtn: document.getElementById('btn-fav'), list: document.getElementById('list-box'),
+        plSheet: document.getElementById('playlist-sheet'), lyrSheet: document.getElementById('lyrics-sheet'),
+        lyrBox: document.getElementById('lyrics-box'), bg: document.getElementById('sheet-bg'),
+        toast: document.getElementById('toast'), legacyInput: document.getElementById('legacy-input')
+    };
+
+    /* --- PERFORMANCE: Lazy Load Observer --- */
+    const artObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                const realIdx = parseInt(img.dataset.realIdx);
+                const item = state.list[realIdx];
+
+                if (item && !img.dataset.loaded) {
+                    loadListArt(item, img);
+                    observer.unobserve(img); // Stop watching once loaded
+                }
+            }
+        });
+    }, { root: ui.list, rootMargin: '100px' }); // Load images 100px before they appear
+
+    window.onload = async () => {
+        const f = localStorage.getItem('vibe_favs');
+        if(f) state.favs = new Set(JSON.parse(f));
+        try {
+            const h = await getDB('handle');
+            if(h) { state.dirHandle = h; ui.toast.classList.add('show'); }
+        } catch(e) {}
+        initDragClose('playlist-sheet', 'drag-playlist');
+        initDragClose('lyrics-sheet', 'drag-lyrics');
+    };
+
+    async function pickFolder() {
+        if (window.showDirectoryPicker) {
+            try {
+                const h = await window.showDirectoryPicker();
+                await setDB('handle', h); state.dirHandle = h; loadFiles(h);
+            } catch(e) {}
+        } else { ui.legacyInput.click(); }
+    }
+
+    async function restoreFolder() {
+        ui.toast.classList.remove('show');
+        if(!state.dirHandle) return;
+        if ((await state.dirHandle.requestPermission({mode:'read'})) === 'granted') loadFiles(state.dirHandle);
+    }
+
+    ui.legacyInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/'));
+        if(files.length) {
+            state.list = files.map(f => ({ name: f.name.replace(/\.[^.]+$/, ""), srcObj: f, isHandle: false, cachedArt: null }));
+            finishLoading();
+        }
+    });
+
+    async function loadFiles(handle) {
+        state.list = []; ui.title.innerText = "Scanning...";
+        for await (const e of handle.values()) {
+            if(e.kind==='file' && /\.(mp3|wav|ogg|m4a)$/i.test(e.name)) {
+                state.list.push({ name: e.name.replace(/\.[^.]+$/, ""), srcObj: e, isHandle: true, cachedArt: null });
+            }
+        }
+        finishLoading();
+    }
+
+    function finishLoading() {
+        if(state.list.length) {
+            state.list.sort((a,b)=>a.name.localeCompare(b.name));
+            state.idx=0; loadTrack(0); renderList(); togglePlaylist(false);
+        } else { ui.title.innerText = "No music found"; }
+    }
+
+    async function loadTrack(i) {
+        if(!state.list[i]) return;
+        const item = state.list[i];
+        
+        // Stop any pending heavy UI updates
+        
+        let blob = item.isHandle ? await item.srcObj.getFile() : item.srcObj;
+        audio.src = URL.createObjectURL(blob);
+        
+        ui.title.innerText = item.name;
+        ui.artist.innerText = "Unknown Artist";
+        
+        // --- Main Player Metadata (Priority) ---
+        jsmediatags.read(blob, {
+            onSuccess: (tag) => {
+                const t = tag.tags;
+                if(t.title) ui.title.innerText = t.title;
+                if(t.artist) ui.artist.innerText = t.artist;
+                
+                // Load Cover Art
+                if(t.picture) {
+                    const data = t.picture.data;
+                    let base64String = "";
+                    for (let i = 0; i < data.length; i++) base64String += String.fromCharCode(data[i]);
+                    const src = `data:${t.picture.format};base64,${window.btoa(base64String)}`;
+                    
+                    ui.cover.src = src;
+                    ui.cover.onload = () => {
+                        ui.cover.classList.add('loaded');
+                        document.querySelector('.cover-art').classList.add('has-art');
+                    };
+                    // Cache this for the list too!
+                    item.cachedArt = src;
+                } else { 
+                    resetCover();
+                }
+                
+                if(t.lyrics) ui.lyrBox.innerText = t.lyrics.lyrics || t.lyrics;
+                else ui.lyrBox.innerHTML = '<div class="lyrics-placeholder">No lyrics available</div>';
+            },
+            onError: () => { 
+                resetCover();
+                ui.lyrBox.innerHTML = '<div class="lyrics-placeholder">No lyrics available</div>';
+            }
+        });
+
+        const isFav = state.favs.has(item.name);
+        ui.favBtn.classList.toggle('active', isFav);
+        ui.favBtn.querySelector('span').classList.toggle('filled', isFav);
+
+        renderList(); // Refresh active state in list
+        if(state.playing) audio.play();
+    }
+
+    function resetCover() {
+        ui.cover.src = ""; 
+        ui.cover.classList.remove('loaded');
+        document.querySelector('.cover-art').classList.remove('has-art');
+    }
+
+    /* --- OPTIMIZED RENDER LIST (With Lazy Load) --- */
+    function renderList() {
+        // Disconnect old observer to prevent memory leaks
+        artObserver.disconnect();
+        ui.list.innerHTML = '';
+        
+        const isFavView = state.filter;
+        const data = isFavView ? state.list.filter(x => state.favs.has(x.name)) : state.list;
+        
+        if(!data.length) { 
+            ui.list.innerHTML='<div style="opacity:0.5;text-align:center;padding:20px">Empty</div>'; 
+            return; 
+        }
+        
+        const fragment = document.createDocumentFragment();
+
+        data.forEach((x, i) => {
+            const realIdx = state.list.indexOf(x);
+            const el = document.createElement('div');
+            el.className = `list-item ${realIdx === state.idx ? 'playing' : ''}`;
+            el.draggable = true;
+            el.dataset.index = i; // Virtual index for swapping
+
+            // --- Drag Events ---
+            el.ondragstart = (e) => { 
+                state.dragSrc = i; 
+                el.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                const img = new Image(); img.src = ''; e.dataTransfer.setDragImage(img, 0, 0);
+            };
+            el.ondragover = (e) => { e.preventDefault(); handleAutoScroll(e); };
+            el.ondragenter = (e) => {
+                e.preventDefault();
+                const currentChildren = Array.from(ui.list.children);
+                const targetIndex = currentChildren.indexOf(el);
+                const srcIndex = currentChildren.indexOf(document.querySelector('.dragging'));
+                if (srcIndex !== -1 && targetIndex !== -1 && srcIndex !== targetIndex) {
+                    performSmoothSwap(srcIndex, targetIndex, data);
+                }
+            };
+            el.ondragend = () => { 
+                state.dragSrc = null;
+                el.classList.remove('dragging');
+                Array.from(ui.list.children).forEach(child => child.style.transform = '');
+                stopAutoScroll();
+            };
+            el.onclick = (e) => { 
+                if(e.target.classList.contains('list-drag-handle')) return; 
+                state.idx = realIdx; loadTrack(realIdx); togglePlaylist(false); 
+            };
+
+            // HTML
+            el.innerHTML = `
+                <span class="material-symbols-rounded list-drag-handle">drag_indicator</span>
+                <div class="list-thumb">
+                    <span class="material-symbols-rounded">album</span> 
+                    <img id="thumb-${realIdx}" alt="art" data-real-idx="${realIdx}">
+                </div>
+                <div class="list-info">
+                    <div class="list-name">${x.name}</div>
+                    <div class="list-artist">Unknown</div>
+                </div>
+                ${state.favs.has(x.name) ? '<span class="material-symbols-rounded filled" style="font-size:20px; color: var(--md-sys-color-primary);">star</span>' : ''}
+            `;
+            
+            fragment.appendChild(el);
+            
+            // Observe the image for Lazy Loading
+            const img = el.querySelector('img');
+            if(x.cachedArt) {
+                // If we already have art, show it instantly
+                img.src = x.cachedArt;
+                img.classList.add('show');
+                img.dataset.loaded = "true";
+            } else {
+                // Otherwise, wait until it scrolls into view
+                artObserver.observe(img);
+            }
+        });
+
+        ui.list.appendChild(fragment);
+    }
+
+    /* --- ARTWORK LOADER (Helper) --- */
+    function loadListArt(item, imgElement) {
+        // Double check cache
+        if (item.cachedArt) {
+            imgElement.src = item.cachedArt;
+            imgElement.classList.add('show');
+            return;
+        }
+
+        const fileOrBlob = item.isHandle ? item.srcObj.getFile() : Promise.resolve(item.srcObj);
+        
+        fileOrBlob.then(blob => {
+            jsmediatags.read(blob, {
+                onSuccess: (tag) => {
+                    const t = tag.tags;
+                    if(t.picture) {
+                        const data = t.picture.data;
+                        let base64String = "";
+                        for (let i = 0; i < data.length; i++) base64String += String.fromCharCode(data[i]);
+                        const finalSrc = `data:${t.picture.format};base64,${window.btoa(base64String)}`;
+                        
+                        // Save to cache so we never read this file again
+                        item.cachedArt = finalSrc;
+                        
+                        // Update UI
+                        imgElement.src = finalSrc;
+                        imgElement.classList.add('show');
+                        imgElement.dataset.loaded = "true";
+                    }
+                },
+                onError: () => {} // Keep placeholder
+            });
+        });
+    }
+
+    /* --- SMOOTH SWAP LOGIC --- */
+    function performSmoothSwap(srcIdx, targetIdx, currentData) {
+        const children = Array.from(ui.list.children);
+        const srcNode = children[srcIdx];
+        const targetNode = children[targetIdx];
+
+        // 1. FLIP: First
+        const firstTops = new Map();
+        children.forEach(c => firstTops.set(c, c.getBoundingClientRect().top));
+
+        // 2. DOM Swap
+        srcIdx < targetIdx ? targetNode.after(srcNode) : targetNode.before(srcNode);
+
+        // 3. Data Update
+        const draggedItem = currentData[srcIdx]; 
+        const realSrcIdx = state.list.indexOf(draggedItem);
+        
+        state.list.splice(realSrcIdx, 1);
+        
+        // Recalculate target index in main list
+        const targetItem = currentData[targetIdx];
+        // If we insert before/after, we need the stable index
+        let realTargetIdx = state.list.indexOf(targetItem);
+        
+        // Edge case correction for insertion
+        if (srcIdx < targetIdx) realTargetIdx++; 
+        
+        // Insert (simplified for robustness)
+        // Note: For perfect sort stability, we just re-insert relative to the target's current main index
+        // But for visual consistency:
+        const newRealIdx = state.list.indexOf(targetItem); 
+        state.list.splice(srcIdx < targetIdx ? newRealIdx + 1 : newRealIdx, 0, draggedItem);
+
+
+        // Fix Playing Index
+        const playingSong = currentData.find((_, i) => children[i].classList.contains('playing'));
+        if(playingSong) state.idx = state.list.indexOf(playingSong);
+
+        // 4. FLIP: Invert & Play
+        children.forEach(c => {
+            const d = firstTops.get(c) - c.getBoundingClientRect().top;
+            if (d !== 0) {
+                c.style.transition = 'none';
+                c.style.transform = `translateY(${d}px)`;
+                c.getBoundingClientRect(); // reflow
+                c.style.transition = 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)';
+                c.style.transform = '';
+            }
+        });
+        state.dragSrc = targetIdx;
+    }
+
+    function togglePlay() {
+        if(!state.list.length) return;
+        if(state.playing) {
+            audio.pause(); state.playing=false;
+            ui.playIcon.innerText='play_arrow'; ui.pCont.classList.remove('playing');
+        } else {
+            audio.play(); state.playing=true;
+            ui.playIcon.innerText='pause'; ui.pCont.classList.add('playing');
+        }
+    }
+
+    function skip(d) {
+        if(!state.list.length) return;
+        if(d===-1 && audio.currentTime>3) { audio.currentTime=0; return; }
+        
+        let queue = state.filter ? state.list.filter(x=>state.favs.has(x.name)) : state.list;
+        let currentInQueue = queue.findIndex(x => x.name === state.list[state.idx].name);
+        if(currentInQueue === -1) currentInQueue = 0;
+
+        let nextIndex;
+        if(state.shuffle) nextIndex = Math.floor(Math.random() * queue.length);
+        else nextIndex = (currentInQueue + d + queue.length) % queue.length;
+        
+        state.idx = state.list.indexOf(queue[nextIndex]);
+        loadTrack(state.idx);
+    }
+
+    function toggleFav() {
+        if(!state.list.length) return;
+        const n = state.list[state.idx].name;
+        if(state.favs.has(n)) state.favs.delete(n); else state.favs.add(n);
+        localStorage.setItem('vibe_favs', JSON.stringify([...state.favs]));
+        
+        const isFav = state.favs.has(n);
+        ui.favBtn.classList.toggle('active', isFav);
+        ui.favBtn.querySelector('span').classList.toggle('filled', isFav);
+        renderList();
+    }
+
+    audio.ontimeupdate = () => {
+        if(!audio.duration) return;
+        const p = (audio.currentTime/audio.duration)*100;
+        ui.seeker.value = p;
+        ui.mask.style.width = `${p}%`;
+        ui.thumb.style.left = `${p}%`;
+        ui.line.style.setProperty('--thumb-pos', `${p}%`);
+        const m=Math.floor(audio.currentTime/60), s=Math.floor(audio.currentTime%60);
+        ui.time.innerText = `${m}:${s<10?'0':''}${s}`;
+    };
+    ui.seeker.oninput = e => audio.currentTime = (e.target.value/100)*audio.duration;
+    audio.onended = () => state.repeat ? audio.play() : skip(1);
+
+    function closeAllSheets() { ui.plSheet.classList.remove('show'); ui.lyrSheet.classList.remove('show'); ui.bg.classList.remove('show'); }
+    function togglePlaylist(show) { closeAllSheets(); if(show) { ui.plSheet.classList.add('show'); ui.bg.classList.add('show'); } }
+    function toggleLyrics(show) { if(!state.list.length)return; closeAllSheets(); if(show) { ui.lyrSheet.classList.add('show'); ui.bg.classList.add('show'); } }
+    
+    function toggleShuffle() { state.shuffle=!state.shuffle; document.getElementById('btn-shuffle').classList.toggle('active'); }
+    function toggleRepeat() { state.repeat=!state.repeat; document.getElementById('btn-repeat').classList.toggle('active'); }
+    function toggleFilter() { state.filter=!state.filter; document.getElementById('btn-filter').classList.toggle('active'); renderList(); }
+
+    function initDragClose(sid, hid) {
+        const s = document.getElementById(sid), h = document.getElementById(hid);
+        let startY = 0;
+        h.addEventListener('touchstart', e => startY = e.touches[0].clientY);
+        h.addEventListener('touchmove', e => {
+            const d = e.touches[0].clientY - startY;
+            if(d > 0) s.style.transform = `translateY(${d}px)`;
+        });
+        h.addEventListener('touchend', e => {
+            const d = e.changedTouches[0].clientY - startY;
+            s.style.transform = ''; if(d > 100) closeAllSheets();
+        });
+    }
+
+    /* --- DB & Scrolling --- */
+    const dbP = new Promise((res, rej) => {
+        const r = indexedDB.open('VibeDB', 1);
+        r.onupgradeneeded = e => e.target.result.createObjectStore('store');
+        r.onsuccess = e => res(e.target.result);
+        r.onerror = rej;
+    });
+    async function setDB(k,v) { (await dbP).transaction('store','readwrite').objectStore('store').put(v,k); }
+    async function getDB(k) { return new Promise(async r => { const q = (await dbP).transaction('store').objectStore('store').get(k); q.onsuccess=()=>r(q.result); }); }
+    
+    let scrollInterval;
+    function handleAutoScroll(e) {
+        const list = ui.list;
+        const rect = list.getBoundingClientRect();
+        const threshold = 60; 
+        const speed = 8; 
+
+        clearInterval(scrollInterval);
+        if (e.clientY < rect.top + threshold) {
+            scrollInterval = setInterval(() => list.scrollTop -= speed, 16);
+        } else if (e.clientY > rect.bottom - threshold) {
+            scrollInterval = setInterval(() => list.scrollTop += speed, 16);
+        }
+    }
+    function stopAutoScroll() { clearInterval(scrollInterval); }
+
+</script>
+
+</body>
+</html>
