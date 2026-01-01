@@ -1,7 +1,7 @@
-# M3E
+# Overview
 M3E player is a Material 3 Expressive UI designed Music player Webapp.
 
-# It features 
+# It features
 1. Material 3 expressive UI.
 2. Light/Dark Mode Support.
 3. Access Your Local Albums.
