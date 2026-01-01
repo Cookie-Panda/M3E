@@ -1,15 +1,16 @@
-const CACHE_NAME = 'm3e-player-v3';
+const CACHE_NAME = 'm3e-player-v4';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
-  './app.js',
-  './icon-512.png',
-  './icon-192.png',
-  './manifest.json',
-  './jsmediatags.min.js',
-  './sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2',
-  './scripts.js',
-  './styles.css'
+  'index.html',
+  'app.js',
+  'icon-512.png',
+  'icon-192.png',
+  'manifest.json',
+  'jsmediatags.min.js',
+  'sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2',
+  'scripts.js',
+  'styles.css',
+  't5svIQcYNIWbFgDgAAzZ34auoVyXkJCOvp3SFWJbN5hF8Ju1x6sKCyp0l9sI40swNJwGpVd4AZzz0v6lJ4qFXNZhGjLvDSkV4W6GGn9Q3I8i.woff2'
 ];
 
 // 1. Install Event: Cache resources immediately
