@@ -1,7 +1,8 @@
-# Overview
-M3E player is a Material 3 Expressive UI designed Music player Webapp.
+# Overview 
+M3E player is a Material 3 Expressive UI design based Music player Webapp.
+It can play your music albums from your device by using file system API so didn't need to upload your files just give permission to access the folder.
 
-# It features
+# It features 
 1. Material 3 expressive UI.
 2. Light/Dark Mode Support.
 3. Access Your Local Albums.
