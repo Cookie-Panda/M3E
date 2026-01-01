@@ -1,13 +1,15 @@
-const CACHE_NAME = 'm3e-player-v2';
+const CACHE_NAME = 'm3e-player-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './app.js',
-  'icon-512.png',
-  'icon-192.png',
+  './icon-512.png',
+  './icon-192.png',
   './manifest.json',
   './jsmediatags.min.js',
-  './sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2' // The specific font file you requested
+  './sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2',
+  './scripts.js',
+  './styles.css'
 ];
 
 // 1. Install Event: Cache resources immediately
