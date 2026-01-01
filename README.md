@@ -11,5 +11,5 @@ M3E player is a Material 3 Expressive UI designed Music player Webapp.
 7. Installs Locally and Works Offline.
 8. Saves your Playlist data only (not your music files)
 
-#Important
+# Important
 Due to some security reasons on many browser it's necessary to you to manually allow playlist to read by app.
