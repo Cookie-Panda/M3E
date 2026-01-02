@@ -1,4 +1,4 @@
-const CACHE_NAME = 'm3e-player-v7';
+const CACHE_NAME = 'm3e-player-v8';
 
 const ASSETS_TO_CACHE = [
   'M3E/',
