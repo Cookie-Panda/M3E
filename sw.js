@@ -1,50 +1,77 @@
-const CACHE_NAME = 'm3e-player-v4';
+const CACHE_NAME = 'm3e-player-v5';
+
 const ASSETS_TO_CACHE = [
-  './',
-  'index.html',
-  'app.js',
-  'icon-512.png',
-  'icon-192.png',
-  'manifest.json',
-  'jsmediatags.min.js',
-  'sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2',
-  'scripts.js',
-  'styles.css',
-  't5svIQcYNIWbFgDgAAzZ34auoVyXkJCOvp3SFWJbN5hF8Ju1x6sKCyp0l9sI40swNJwGpVd4AZzz0v6lJ4qFXNZhGjLvDSkV4W6GGn9Q3I8i.woff2'
+  '/',
+  '/index.html',
+  '/app.js',
+  '/scripts.js',
+  '/styles.css',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/jsmediatags.min.js',
+  '/sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjzaqkNCeE.woff2',
+  '/t5svIQcYNIWbFgDgAAzZ34auoVyXkJCOvp3SFWJbN5hF8Ju1x6sKCyp0l9sI40swNJwGpVd4AZzz0v6lJ4qFXNZhGjLvDSkV4W6GGn9Q3I8i.woff2'
 ];
 
-// 1. Install Event: Cache resources immediately
+
+// 1. INSTALL
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching all: app shell and content');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  
+  // Activate immediately
+  self.skipWaiting();
 });
 
-// 2. Fetch Event: Serve from Cache, Fallback to Network
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cache hit or fetch over network
-      return response || fetch(event.request);
-    })
+
+// 2. ACTIVATE
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      caches.keys().then((keys) =>
+        Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME) {
+              return caches.delete(key);
+            }
+          })
+        )
+      ),
+      self.clients.claim()
+    ])
   );
 });
 
-// 3. Activate Event: Clean up old caches if versions change
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('[Service Worker] Removing old cache', key);
-            return caches.delete(key);
-          }
+
+// 3. FETCH (Offline-first)
+self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+  
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      
+      return fetch(event.request)
+        .then((networkResponse) => {
+          // Cache new successful requests
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
         })
-      );
+        .catch(() => {
+          // Offline fallback for navigation
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+        });
     })
   );
 });
