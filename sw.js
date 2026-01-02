@@ -1,8 +1,8 @@
-const CACHE_NAME = 'm3e-player-v6';
+const CACHE_NAME = 'm3e-player-v7';
 
 const ASSETS_TO_CACHE = [
   '/M3E/',
-  '/M3E/player.html',
+  '/M3E/index.html',
   '/M3E/app.js',
   '/M3E/scripts.js',
   '/M3E/styles.css',
