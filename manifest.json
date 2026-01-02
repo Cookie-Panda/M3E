@@ -1,7 +1,7 @@
 {
   "name": "M3E Player",
   "short_name": "M3E",
-  "start_url": "./index.html",
+  "start_url": "M3E/index.html",
   "display": "fullscreen",
   "orientation": "portrait-primary",
   "background_color": "#000000",
